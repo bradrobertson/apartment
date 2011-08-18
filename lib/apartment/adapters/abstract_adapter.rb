@@ -30,7 +30,7 @@ module Apartment
       # 
       #   @param {String} database Database name
   		def create(database)
-        # TODO create_database unless using_schemas?
+        ActiveRecord::Base.connection.execute("CREATE DATABASE #{sanitize(database)}") unless using_schemas?
 
   			process(database) do
     			import_database_schema
