@@ -26,7 +26,9 @@ describe Apartment::Adapters::PostgresqlAdapter do
     end
 
     after do
-      Apartment::Test.drop_schema(schema)
+      subject.schemas.each do |schema|
+        Apartment::Test.drop_schema schema
+      end
     end
 
     describe "#create" do
@@ -103,6 +105,14 @@ describe Apartment::Adapters::PostgresqlAdapter do
       end
     end
 
+    describe "#schemas" do
+      it "should return an array of strings representing all available schemas except public and pg-specific schemas" do
+        subject.create schema2
+        subject.schemas.size.should == 2
+        subject.schemas.should include('first_db_schema')
+        subject.schemas.should include('another_db_schema')
+      end
+    end
   end
 
   context "using databases" do
