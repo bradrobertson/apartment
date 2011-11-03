@@ -78,7 +78,11 @@ module Apartment
           end
         end
       end
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> f541ad9b40331d443f92df8af11b20602c85b2c7
       #   Reset schema search path to the default schema_search_path
       #
       #   @return {String} default schema search path
