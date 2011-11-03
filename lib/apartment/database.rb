@@ -7,7 +7,7 @@ module Apartment
 
     extend self
 
-    delegate :create, :current_database, :process, :process_excluded_models, :reset, :seed, :switch, :to => :adapter
+    delegate :create, :current_database, :process, :process_excluded_models, :reset, :schemas, :seed, :switch, :to => :adapter
 
     #   Initialize Apartment config options such as excluded_models
     #
