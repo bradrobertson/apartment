@@ -135,7 +135,6 @@ describe Apartment::Adapters::PostgresqlAdapter do
 
     describe "#schemas" do
       it "should return an array of strings representing all available schemas except public and pg-specific schemas" do
-        subject.create schema2
         subject.schemas.size.should == 2
         subject.schemas.should include('first_db_schema')
         subject.schemas.should include('another_db_schema')
