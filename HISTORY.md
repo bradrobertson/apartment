@@ -1,6 +1,12 @@
-# 0.12.0
-  * Oct 4, 2001
+# 0.13.0
+  * Oct 25, 2011
 
+  - `process` will now rescue with reset if the previous schema/db is no longer available
+  - `create` now takes an optional block which allows you to process within the newly created db
+  - Fixed Rails version >= 3.0.10 and < 3.1 because there have been significant testing problems with 3.1, next version will hopefully fix this
+
+# 0.12.0
+  * Oct 4, 2011
   - Added a `drop` method for removing databases/schemas
   - Refactored abstract adapter to further remove duplication in concrete implementations
   - Excluded models now take string references so they are properly reloaded in development
@@ -107,4 +113,3 @@
   * March 30, 2011 *
 
   - Original pass from Ryan
-

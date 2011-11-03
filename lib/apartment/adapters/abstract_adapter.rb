@@ -27,6 +27,8 @@ module Apartment
 
           # Seed data if appropriate
           seed_data if Apartment.seed_after_create
+
+          yield if block_given?
         end
       end
 
@@ -67,9 +69,8 @@ module Apartment
         current_db = current_database
         switch(database)
         yield if block_given?
-
       ensure
-        switch(current_db)
+        switch(current_db) rescue reset
       end
 
       #   Establish a new connection for each specific excluded model
@@ -140,7 +141,7 @@ module Apartment
       #   Import the database schema
       #
       def import_database_schema
-        ActiveRecord::Schema.verbose = false    # do not log schema load output.  Note that this is slightly duplicated below with silenct_stream, except that this also works with Spork
+        ActiveRecord::Schema.verbose = false    # do not log schema load output.
         load_or_abort("#{Rails.root}/db/schema.rb")
       end
 
