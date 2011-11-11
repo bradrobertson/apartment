@@ -107,6 +107,17 @@ describe Apartment::Database do
 
       end
 
+      describe "#drop" do
+        before do
+          Apartment::Database.create database2
+        end
+
+        it "should drop the schema" do
+          Apartment::Database.drop database2
+          Apartment::Database.schemas.should_not include('yet_another_database')
+        end
+      end
+
       describe "#create" do
         it "should create new postgres schema" do
           ActiveRecord::Base.connection.execute("SELECT nspname FROM pg_namespace;").collect{|row| row['nspname']}.should include(database)
