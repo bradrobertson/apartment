@@ -88,17 +88,19 @@ module Apartment
       end
 
       #   Returns an array of strings of all schemas **except** the public schema.
+      #
       def schemas
         sql = "SELECT nspname FROM pg_namespace WHERE nspname !~ '^pg_.*' AND nspname !~ 'information_schema' AND nspname !~ 'public'"
         ActiveRecord::Base.connection.query(sql).flatten
       end
 
-      protected
+    protected
 
       #   Set schema search path to new schema
       #
       def connect_to_new(database = nil)
         return reset if database.nil?
+        ActiveRecord::Base.connection.clear_cache!
         ActiveRecord::Base.connection.schema_search_path = database
 
       rescue ActiveRecord::StatementInvalid => e
