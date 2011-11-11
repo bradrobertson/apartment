@@ -68,17 +68,15 @@ describe Apartment::Database do
       end
 
       after do
-        Apartment::Test.drop_schema database
+        Apartment::Database.schemas.each do |schema|
+          Apartment::Test.drop_schema schema
+        end
       end
 
       describe "#process" do
 
         before do
           Apartment::Database.create database2
-        end
-
-        after do
-          Apartment::Test.drop_schema database2
         end
 
         it "should connect to new schema" do
@@ -129,6 +127,19 @@ describe Apartment::Database do
         end
       end
 
+      describe "#schemas" do
+        before do
+          Apartment::Database.create database2
+        end
+
+        it "should return an array of schemas" do
+          schemas = Apartment::Database.schemas
+          schemas.size.should == 2
+          schemas.should include('some_new_database')
+          schemas.should include('yet_another_database')
+        end
+      end
+
       describe "#switch" do
 
         let(:x){ rand(3) }
@@ -148,10 +159,6 @@ describe Apartment::Database do
 
           before do
             Apartment::Database.create database2
-          end
-
-          after do
-            Apartment::Test.drop_schema database2
           end
 
           it "should create a model instance in the current schema" do
