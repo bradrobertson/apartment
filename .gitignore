@@ -5,3 +5,4 @@ pkg/*
 *.log
 *.swp
 *.swo
+spec/config/database.yml
