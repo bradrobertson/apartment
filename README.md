@@ -155,9 +155,9 @@ that a `database` attribute is set on this model *before* it is serialized, to e
 
 * Please issue pull requests to the `development` branch.  All development happens here, master is used for releases
 * Setup the test suite:
-  * Look at the `spec/config/database.yml`
+  * Look at the `spec/config/database.yml.sample`
   * Create the respective databases
-  * Edit the `spec/config/database.yml` if needed to match your credentials (but **don't** commit this)
+  * Create your own `spec/config/database.yml` and match your credentials (don't commit this)
   * Run `rake spec`
 * Ensure that your code is accompanied with tests.  No code will be merged without tests
 
