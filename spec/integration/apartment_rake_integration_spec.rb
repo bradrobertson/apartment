@@ -3,14 +3,16 @@ require 'rake'
 
 describe "apartment rake tasks" do
   
-  before :all do
-    Apartment::Test.migrate   # ensure we have latest schema in the public 
-  end
-  
   before do
     @rake = Rake::Application.new
     Rake.application = @rake
     Dummy::Application.load_tasks
+
+    # somehow this misc.rake file gets lost in the shuffle
+    # it defines a `rails_env` task that our db:migrate depends on
+    # No idea why, but during the tests, we somehow lose this tasks, so we get an error when testing migrations
+    # This is STUPID!
+    load "rails/tasks/misc.rake"    
   end
   
   after do
@@ -25,23 +27,25 @@ describe "apartment rake tasks" do
   end
 
   context "with x number of databases" do
+    
+    let(:x){ 1 + rand(5) }    # random number of dbs to create
+    let(:db_names){ x.times.map{|y| "database_#{y}" } }
+
     before do
-      @db_names = []
-      @x = 1 + rand(5).times do |x| 
-        @db_names << db_name = "schema_#{x}"
-        Apartment::Database.create db_name
+      db_names.collect do |db_name|
+        Apartment::Database.create(db_name)
         Company.create :database => db_name
       end
     end
     
     after do
-      @db_names.each{ |db| Apartment::Test.drop_schema(db) }
+      db_names.each{ |db| Apartment::Database.drop(db) }
       Company.delete_all
     end
     
     describe "#migrate" do
       it "should migrate all databases" do
-        Apartment::Migrator.should_receive(:migrate).exactly(@db_names.length).times
+        Apartment::Migrator.should_receive(:migrate).exactly(db_names.length).times
         
         @rake['apartment:migrate'].invoke
       end
@@ -49,17 +53,18 @@ describe "apartment rake tasks" do
     
     describe "#rollback" do
       it "should rollback all dbs" do
-        @db_names.each do |name|
+        db_names.each do |name|
           Apartment::Migrator.should_receive(:rollback).with(name, anything)
         end
         
         @rake['apartment:rollback'].invoke
+        @rake['apartment:migrate'].invoke   # migrate again so that our next test 'seed' can run (requires migrations to be complete)
       end
     end
     
     describe "apartment:seed" do
       it "should seed all databases" do
-        Apartment::Database.should_receive(:seed).exactly(@db_names.length).times
+        Apartment::Database.should_receive(:seed).exactly(db_names.length).times
         
         @rake['apartment:seed'].invoke
       end

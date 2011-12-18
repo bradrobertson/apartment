@@ -69,6 +69,7 @@ module Apartment
         current_db = current_database
         switch(database)
         yield if block_given?
+
       ensure
         switch(current_db) rescue reset
       end
@@ -113,7 +114,7 @@ module Apartment
       end
       alias_method :seed, :seed_data
 
-      protected
+    protected
 
       #   Create the database
       #
@@ -144,6 +145,7 @@ module Apartment
         ActiveRecord::Schema.verbose = false    # do not log schema load output.
         load_or_abort("#{Rails.root}/db/schema.rb")
       end
+
 
       #   Return a new config that is multi-tenanted
       #

@@ -44,7 +44,7 @@ module Apartment
       @config = nil
     end
 
-    private
+  private
 
     #   Fetch the rails database configuration
     #

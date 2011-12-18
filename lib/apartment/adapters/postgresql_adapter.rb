@@ -15,7 +15,7 @@ module Apartment
     # Default adapter when not using Postgresql Schemas
     class PostgresqlAdapter < AbstractAdapter
 
-      protected
+    protected
 
       #   Connect to new database
       #   Abstract adapter will catch generic ActiveRecord error
@@ -25,7 +25,7 @@ module Apartment
       #
       def connect_to_new(database)
         super
-      rescue PGError => e
+      rescue PGError
         raise DatabaseNotFound, "Cannot find database #{environmentify(database)}"
       end
 
@@ -49,7 +49,7 @@ module Apartment
       def drop(database)
         ActiveRecord::Base.connection.execute("DROP SCHEMA #{database} CASCADE")
 
-      rescue ActiveRecord::StatementInvalid => e
+      rescue ActiveRecord::StatementInvalid
         raise SchemaNotFound, "The schema #{database.inspect} cannot be found."
       end
 
@@ -100,10 +100,9 @@ module Apartment
       #
       def connect_to_new(database = nil)
         return reset if database.nil?
-        ActiveRecord::Base.connection.clear_cache!
         ActiveRecord::Base.connection.schema_search_path = database
 
-      rescue ActiveRecord::StatementInvalid => e
+      rescue ActiveRecord::StatementInvalid
         raise SchemaNotFound, "The schema #{database.inspect} cannot be found."
       end
 
@@ -112,7 +111,7 @@ module Apartment
       def create_database(database)
         ActiveRecord::Base.connection.execute("CREATE SCHEMA #{database}")
 
-      rescue ActiveRecord::StatementInvalid => e
+      rescue ActiveRecord::StatementInvalid
         raise SchemaExists, "The schema #{database} already exists."
       end
 

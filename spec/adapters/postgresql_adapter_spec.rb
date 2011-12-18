@@ -51,7 +51,10 @@ describe Apartment::Adapters::PostgresqlAdapter do
       end
 
       it "should yield to block if passed" do
+<<<<<<< HEAD
         Apartment::Test.migrate   # ensure we have latest schema in the public
+=======
+>>>>>>> 73b7acee6422ae919789e2cad2653a2dfcd92adf
         subject.drop(schema2) # so we don't get errors on creation
 
         @count = 0  # set our variable so its visible in and outside of blocks

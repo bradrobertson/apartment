@@ -1,6 +1,16 @@
+# 0.14.1
+  * Dec 13, 2011
+
+  - Fix ActionDispatch::Callbacks deprecation warnings
+
+# 0.14.0
+  * Dec 13, 2011
+
+  - Rails 3.1 Support
+
 # 0.13.1
   * Nov 8, 2011
-  
+
   - Reset prepared statement cache for rails 3.1.1 before switching dbs when using postgresql schemas
     - Only necessary until the next release which will be more schema aware
 
@@ -13,6 +23,7 @@
 
 # 0.12.0
   * Oct 4, 2011
+
   - Added a `drop` method for removing databases/schemas
   - Refactored abstract adapter to further remove duplication in concrete implementations
   - Excluded models now take string references so they are properly reloaded in development

@@ -5,27 +5,27 @@ Bundler::GemHelper.install_tasks
 require "rspec"
 require "rspec/core/rake_task"
 
-RSpec::Core::RakeTask.new(:spec) do |spec|
+RSpec::Core::RakeTask.new(:spec => "db:test:prepare") do |spec|
   spec.pattern = "spec/**/*_spec.rb"
 end
 
 namespace :spec do
   
   [:tasks, :unit, :adapters, :integration].each do |type|
-    RSpec::Core::RakeTask.new(type) do |spec|
+    RSpec::Core::RakeTask.new(type => :spec) do |spec|
       spec.pattern = "spec/#{type}/**/*_spec.rb"
     end
   end
   
-  namespace :unit do
-    RSpec::Core::RakeTask.new(:adapters) do |spec|
-      spec.pattern = "spec/unit/adapters/**/*_spec.rb"
-    end
-  end
-
 end
 
 task :default => :spec
+
+namespace :db do
+  namespace :test do
+    task :prepare => %w{postgres:drop_db postgres:build_db mysql:drop_db mysql:build_db}
+  end
+end
 
 namespace :postgres do
   require 'active_record'
@@ -35,7 +35,7 @@ namespace :postgres do
   task :build_db do
     %x{ createdb -E UTF8 #{pg_config['database']} } rescue "test db already exists"
     ActiveRecord::Base.establish_connection pg_config
-    load 'spec/dummy/db/schema.rb'
+    ActiveRecord::Migrator.migrate('spec/dummy/db/migrate')
   end
   
   desc "drop the PostgreSQL test database"
@@ -54,13 +54,13 @@ namespace :mysql do
   task :build_db do
     %x{ mysqladmin -u root create #{my_config['database']} } rescue "test db already exists"
     ActiveRecord::Base.establish_connection my_config
-    load 'spec/dummy/db/schema.rb'
+    ActiveRecord::Migrator.migrate('spec/dummy/db/migrate')
   end
   
   desc "drop the MySQL test database"
   task :drop_db do
     puts "dropping database #{my_config['database']}"
-    %x{ mysqladmin -u root drop #{my_config['database']} }
+    %x{ mysqladmin -u root drop #{my_config['database']} --force}
   end
     
 end

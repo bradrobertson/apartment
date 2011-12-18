@@ -33,4 +33,5 @@ class CreateDummyModels < ActiveRecord::Migration
     drop_table :users
     drop_table :delayed_jobs
   end
+
 end
