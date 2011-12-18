@@ -87,6 +87,13 @@ module Apartment
         ActiveRecord::Base.connection.schema_search_path = @defaults[:schema_search_path]
       end
 
+      #   Returns an array of strings of all schemas **except** the public schema.
+      #
+      def schemas
+        sql = "SELECT nspname FROM pg_namespace WHERE nspname !~ '^pg_.*' AND nspname !~ 'information_schema' AND nspname !~ 'public'"
+        ActiveRecord::Base.connection.query(sql).flatten
+      end
+
     protected
 
       #   Set schema search path to new schema

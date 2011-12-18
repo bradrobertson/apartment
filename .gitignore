@@ -3,4 +3,6 @@
 Gemfile.lock
 pkg/*
 *.log
-
+*.swp
+*.swo
+spec/config/database.yml
