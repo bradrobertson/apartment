@@ -47,7 +47,7 @@ module Apartment
       #   @param {String} database Database (schema) to drop
       #
       def drop(database)
-        ActiveRecord::Base.connection.execute("DROP SCHEMA #{database} CASCADE")
+        ActiveRecord::Base.connection.execute("DROP SCHEMA \"#{database}\" CASCADE")
 
       rescue ActiveRecord::StatementInvalid
         raise SchemaNotFound, "The schema #{database.inspect} cannot be found."
