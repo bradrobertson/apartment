@@ -102,7 +102,7 @@ module Apartment
       #   Create the new schema
       #
       def create_database(database)
-        ActiveRecord::Base.connection.execute("CREATE SCHEMA #{database}")
+        ActiveRecord::Base.connection.execute("CREATE SCHEMA \"#{database}\"")
 
       rescue ActiveRecord::StatementInvalid
         raise SchemaExists, "The schema #{database} already exists."
