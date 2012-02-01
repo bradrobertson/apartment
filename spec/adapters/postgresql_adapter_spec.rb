@@ -16,7 +16,7 @@ describe Apartment::Adapters::PostgresqlAdapter do
     
     let(:schema){ 'first_db_schema' }
     let(:schema2){ 'another_db_schema' }
-    let(:numberedschema){ '1' }
+    let(:numberedschema){ 1 }
     let(:database_names){ ActiveRecord::Base.connection.execute("SELECT nspname FROM pg_namespace;").collect{|row| row['nspname']} }
     
     subject{ Apartment::Database.postgresql_adapter Apartment::Test.config['connections']['postgresql'].symbolize_keys }
@@ -42,7 +42,7 @@ describe Apartment::Adapters::PostgresqlAdapter do
       end
     
       it "should be able to create a numbered schema" do
-        database_names.should include(numberedschema)
+        database_names.should include(numberedschema.to_s)
       end
 
       it "should load schema.rb to new schema" do
