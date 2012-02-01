@@ -82,7 +82,7 @@ describe Apartment::Adapters::PostgresqlAdapter do
         subject.switch schema
         subject.drop numberedschema
 
-        database_names.should_not include(numberedschema)
+        database_names.should_not include(numberedschema.to_s)
       end
 
       it "should raise an error for unkown database" do
