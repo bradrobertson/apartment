@@ -19,7 +19,7 @@ module Apartment
       end
       
       def subdomain(request)
-        request.subdomain.present? && request.subdomain || nil
+        request.subdomains.first.present? && request.subdomains.first || nil
       end
       
     end
