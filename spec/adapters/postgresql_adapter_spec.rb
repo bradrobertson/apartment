@@ -16,6 +16,7 @@ describe Apartment::Adapters::PostgresqlAdapter do
     
     let(:schema){ 'first_db_schema' }
     let(:schema2){ 'another_db_schema' }
+    let(:numberedschema){ 1 }
     let(:database_names){ ActiveRecord::Base.connection.execute("SELECT nspname FROM pg_namespace;").collect{|row| row['nspname']} }
     
     subject{ Apartment::Database.postgresql_adapter Apartment::Test.config['connections']['postgresql'].symbolize_keys }
@@ -24,12 +25,14 @@ describe Apartment::Adapters::PostgresqlAdapter do
       Apartment.use_postgres_schemas = true
       subject.create(schema)
       subject.create(schema2)
+      subject.create(numberedschema)
     end
   
     after do
       # sometimes we manually drop these schemas in testing, dont' care if we can't drop hence rescue
       subject.drop(schema) rescue true 
       subject.drop(schema2) rescue true
+      subject.drop(numberedschema) rescue true
     end
     
     describe "#create" do
@@ -38,6 +41,10 @@ describe Apartment::Adapters::PostgresqlAdapter do
         database_names.should include(schema)
       end
     
+      it "should be able to create a numbered schema" do
+        database_names.should include(numberedschema.to_s)
+      end
+
       it "should load schema.rb to new schema" do
         ActiveRecord::Base.connection.schema_search_path = schema
         ActiveRecord::Base.connection.tables.should include('companies')
@@ -69,6 +76,13 @@ describe Apartment::Adapters::PostgresqlAdapter do
         subject.drop schema2
 
         database_names.should_not include(schema2)
+      end
+
+      it "should be able to drop a numbered schema" do
+        subject.switch schema
+        subject.drop numberedschema
+
+        database_names.should_not include(numberedschema.to_s)
       end
 
       it "should raise an error for unkown database" do
