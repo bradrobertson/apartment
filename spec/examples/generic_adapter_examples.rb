@@ -69,6 +69,7 @@ shared_examples_for "a generic apartment adapter" do
   end
   
   describe "#reset" do
+    before { ActiveRecord::Base.establish_connection config }
     it "should reset connection" do
       subject.switch(db1)
       subject.reset

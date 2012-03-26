@@ -3,8 +3,13 @@ require 'apartment/adapters/mysql2_adapter'
 
 describe Apartment::Adapters::Mysql2Adapter do
 
-  let(:config){ Apartment::Test.config['connections']['mysql'] }
-  subject{ Apartment::Database.mysql2_adapter config.symbolize_keys }
+  let(:config){ Apartment::Test.config['connections']['mysql'].symbolize_keys }
+  subject{ Apartment::Database.mysql2_adapter config }
+
+  before do
+    Apartment::Database.stub(:config).and_return(config)
+    Apartment::Database.reload!
+  end
 
   def database_names
     ActiveRecord::Base.connection.execute("SELECT schema_name FROM information_schema.schemata").collect{|row| row[0]}

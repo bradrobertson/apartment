@@ -8,14 +8,9 @@ shared_examples_for "a schema based apartment adapter" do
   let(:public_schema){ default_database }
 
   describe "#init" do
-    
     it "should process model exclusions" do
-      Apartment.configure do |config|
-        config.excluded_models = ["Company"]
-      end
-      
       Apartment::Database.init
-      
+
       Company.table_name.should == "public.companies"
     end
   end

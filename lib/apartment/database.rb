@@ -7,7 +7,7 @@ module Apartment
 
     extend self
 
-    delegate :create, :current_database, :drop, :process, :process_excluded_models, :reset, :seed, :switch, :to => :adapter
+    delegate :create, :current_database, :current_database=, :drop, :process, :process_excluded_models, :reset, :seed, :switch, :to => :adapter
 
     #   Initialize Apartment config options such as excluded_models
     #
@@ -44,6 +44,51 @@ module Apartment
       @config = nil
     end
 
+    #   Get class to use as key for ActiveRecord connection pool
+    #
+    def current_pool_klass
+
+      if current_database == config[:database]
+        ActiveRecord::Base
+      else
+        current_database.underscore.classify.constantize
+      end
+    end
+
+    #   Create dummy AR class for connection pool key
+    #
+    def create_connection_pool_klass(klass_name, spec=nil)
+      spec ||= config
+
+      unless klass = (Module.const_get(klass_name) rescue nil)
+        klass = Class.new(ActiveRecord::Base) 
+        Object.const_set klass_name, klass 
+
+        #establish connection here, so it's done only once
+        #preserving the connection pool
+        klass.establish_connection(spec)
+      else
+        #ensure connection pools exists for the class 
+        #if not create one (normally only hit while changing adapters)
+        unless connection_pools_klasses.include?(klass_name)
+          klass.establish_connection(spec)
+        end
+      end
+
+      klass
+    end
+
+    #   Retrieve current classes used by connection pools
+    #
+    def connection_pools_klasses
+      #Rails 3.2 & (probably 4.0)
+      pools = ActiveRecord::Base.connection_handler.instance_variable_get('@class_to_pool')
+
+      #Rails 3.1
+      pools ||= ActiveRecord::Base.connection_handler.instance_variable_get('@connection_pools')
+
+      return pools.keys
+    end
   private
 
     #   Fetch the rails database configuration

@@ -13,6 +13,9 @@ module Apartment
       def initialize(config, defaults = {})
         @config = config
         @defaults = defaults
+
+        self.current_database = config[:database]
+        ActiveRecord::Base.establish_connection config
       end
 
       #   Create a new database, import schema, seed if appropriate
@@ -37,7 +40,15 @@ module Apartment
       #   @return {String} current database name
       #
       def current_database
-        ActiveRecord::Base.connection.current_database
+        Rails.application.config.current_database
+      end
+
+      #   Set the current database name
+      #
+      #   @return {String} current database name
+      #
+      def current_database=(val)
+        Rails.application.config.current_database = val
       end
 
       #   Drop the database
@@ -45,7 +56,7 @@ module Apartment
       #   @param {String} database Database name
       #
       def drop(database)
-        # ActiveRecord::Base.connection.drop_database   note that drop_database will not throw an exception, so manually execute
+        ActiveRecord::Base.clear_all_connections!
         ActiveRecord::Base.connection.execute("DROP DATABASE #{environmentify(database)}" )
 
       rescue ActiveRecord::StatementInvalid
@@ -84,7 +95,7 @@ module Apartment
       #   Reset the database connection to the default
       #
       def reset
-        ActiveRecord::Base.establish_connection @config
+        connect_to_new @config[:database]
       end
 
       #   Switch to new connection (or schema if appopriate)
@@ -123,8 +134,16 @@ module Apartment
       #   @param {String} database Database name
       #
       def connect_to_new(database)
-        ActiveRecord::Base.establish_connection multi_tenantify(database)
-        ActiveRecord::Base.connection.active?   # call active? to manually check if this connection is valid
+        Apartment::Database.current_database = database
+
+        if database == @config[:database]
+          klass = ActiveRecord::Base
+        else
+          klass = Apartment::Database.create_connection_pool_klass(database.underscore.classify, multi_tenantify(database))
+        end
+
+        klass.connection.active? # call active? to manually check if this connection is valid
+
 
       rescue ActiveRecord::StatementInvalid
         raise DatabaseNotFound, "The database #{environmentify(database)} cannot be found."

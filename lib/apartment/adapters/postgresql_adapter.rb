@@ -46,6 +46,7 @@ module Apartment
       #   @param {String} database Database (schema) to drop
       #
       def drop(database)
+        ActiveRecord::Base.clear_all_connections!
         ActiveRecord::Base.connection.execute("DROP SCHEMA \"#{database}\" CASCADE")
 
       rescue ActiveRecord::StatementInvalid
@@ -65,6 +66,7 @@ module Apartment
           end
 
           excluded_model.constantize.tap do |klass|
+            klass.establish_connection @config
             # some models (such as delayed_job) seem to load and cache their column names before this,
             # so would never get the public prefix, so reset first
             klass.reset_column_information

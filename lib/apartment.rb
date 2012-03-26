@@ -1,4 +1,8 @@
-require 'apartment/railtie' if defined?(Rails)
+if defined?(Rails)
+  require 'apartment/railtie'
+  require 'apartment/active_record/connection_handler_extension'
+end
+
 
 module Apartment
 
