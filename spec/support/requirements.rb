@@ -17,8 +17,8 @@ module Apartment
 
         before do
           ActiveRecord::Base.establish_connection config
-          subject.create(db1)
-          subject.create(db2)
+          subject.create(db1) rescue true
+          subject.create(db2) rescue true
         end
 
         after do
@@ -29,7 +29,6 @@ module Apartment
           subject.drop(db1) rescue true
           subject.drop(db2) rescue true
           
-          ActiveRecord::Base.clear_all_connections!
           Apartment::Database.reload!
         end
       end

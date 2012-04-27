@@ -1,28 +1,33 @@
 require 'spec_helper'
 
+class SomeDb < ActiveRecord::Base
+
+end
+
 describe Apartment::Database do
   context "using mysql" do
     # See apartment.yml file in dummy app config
 
     let(:config){ Apartment::Test.config['connections']['mysql'].symbolize_keys }
-
+    let(:undefd_class) { 'MySqlDb' }
     before do
       ActiveRecord::Base.establish_connection config
       Apartment::Test.load_schema   # load the Rails schema in the public db schema
+       Apartment.use_postgres_schemas = false
       subject.stub(:config).and_return config   # Use postgresql database config for this test
+      subject.reload!
     end
 
     describe "#adapter" do
-      before do
-        subject.reload!
-      end
-
       it "should load mysql adapter" do
         subject.adapter
         Apartment::Adapters::Mysql2Adapter.should be_a(Class)
       end
 
     end
+
+    it_should_behave_like "a connection pooled adapter"
+
   end
 
   context "using postgresql" do
@@ -34,9 +39,8 @@ describe Apartment::Database do
     let(:database2){ Apartment::Test.next_db }
     
     before do
-      Apartment.use_postgres_schemas = true
+      Apartment.use_postgres_schemas = false
       ActiveRecord::Base.establish_connection config
-      Apartment::Test.load_schema   # load the Rails schema in the public db schema
       subject.stub(:config).and_return config   # Use postgresql database config for this test
     end
     
@@ -59,19 +63,31 @@ describe Apartment::Database do
       end
       
     end
-    
+
+    context "with databases" do
+
+      let(:undefd_class) { 'PgDb' }
+      before { ActiveRecord::Base.establish_connection config }  
+
+      it_should_behave_like "a connection pooled adapter"
+    end
+
     context "with schemas" do
-      
+
       before do
+        subject.reload!
         Apartment.configure do |config|
           config.excluded_models = []
           config.use_postgres_schemas = true
           config.seed_after_create = true
         end
+        Apartment::Test.load_schema 
         subject.create database
+
+        ActiveRecord::Base.establish_connection config
       end
       
-      after{ subject.drop database }
+      after { subject.drop database }
       
       describe "#create" do
         it "should seed data" do
@@ -130,4 +146,5 @@ describe Apartment::Database do
     end
     
   end
+
 end

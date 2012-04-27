@@ -26,7 +26,6 @@ describe Apartment::Delayed do
   after do
     Apartment::Test.drop_schema database
     Apartment::Test.drop_schema database2
-    Apartment::Test.reset
   end
 
   describe Apartment::Delayed::Requirements do

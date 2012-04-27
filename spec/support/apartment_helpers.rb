@@ -15,6 +15,7 @@ module Apartment
     end
     
     def drop_schema(schema)
+      ActiveRecord::Base.clear_all_connections!
       ActiveRecord::Base.connection.execute("DROP SCHEMA IF EXISTS #{schema} CASCADE") rescue true
     end
     

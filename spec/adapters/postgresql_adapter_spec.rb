@@ -3,8 +3,16 @@ require 'apartment/adapters/postgresql_adapter'
 
 describe Apartment::Adapters::PostgresqlAdapter do
 
-  let(:config){ Apartment::Test.config['connections']['postgresql'] }
-  subject{ Apartment::Database.postgresql_adapter config.symbolize_keys }
+  let(:config){ Apartment::Test.config['connections']['postgresql'].symbolize_keys  }
+  subject{ Apartment::Database.postgresql_adapter config}
+
+  before do
+    Apartment::Database.connection_pools_klasses.each do |klass|
+      ActiveRecord::Base.connection_handler.remove_connection(klass.constantize)
+    end
+    Apartment::Database.stub(:config).and_return(config)
+    Apartment::Database.reload!
+  end
 
   context "using schemas" do
 
@@ -14,13 +22,13 @@ describe Apartment::Adapters::PostgresqlAdapter do
     def database_names
       ActiveRecord::Base.connection.execute("SELECT nspname FROM pg_namespace;").collect{|row| row['nspname']}
     end
-    
+
     let(:default_database){ subject.process{ ActiveRecord::Base.connection.schema_search_path } }
 
     it_should_behave_like "a generic apartment adapter"
     it_should_behave_like "a schema based apartment adapter"
   end
-  
+
   context "using databases" do
 
     before{ Apartment.use_postgres_schemas = false }  
@@ -29,7 +37,7 @@ describe Apartment::Adapters::PostgresqlAdapter do
     def database_names
       connection.execute("select datname from pg_database;").collect{|row| row['datname']}
     end
-    
+
     let(:default_database){ subject.process{ ActiveRecord::Base.connection.current_database } }
 
     it_should_behave_like "a generic apartment adapter"
