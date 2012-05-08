@@ -34,15 +34,12 @@ namespace :postgres do
 
   desc 'Build the PostgreSQL test databases'
   task :build_db do
-    %x{ createdb -E UTF8 #{pg_config['database']} -Upostgres } rescue "test db already exists"
-    ActiveRecord::Base.establish_connection pg_config
-    ActiveRecord::Migrator.migrate('spec/dummy/db/migrate')
+    build_database('postgresql')
   end
 
   desc "drop the PostgreSQL test database"
   task :drop_db do
-    puts "dropping database #{pg_config['database']}"
-    %x{ dropdb #{pg_config['database']} -Upostgres }
+    drop_database('postgresql')
   end
 
 end
@@ -53,28 +50,42 @@ namespace :mysql do
 
   desc 'Build the MySQL test databases'
   task :build_db do
-    %x{ mysqladmin -u root create #{my_config['database']} } rescue "test db already exists"
-    ActiveRecord::Base.establish_connection my_config
-    ActiveRecord::Migrator.migrate('spec/dummy/db/migrate')
+    build_database('mysql')
   end
 
   desc "drop the MySQL test database"
   task :drop_db do
-    puts "dropping database #{my_config['database']}"
-    %x{ mysqladmin -u root drop #{my_config['database']} --force}
+    drop_database('mysql')
   end
 
 end
 
-# TODO clean this up
+# Builds & migrates database using the given configuration, dropping any old versions.
+def build_database(config_name)
+  puts "creating database #{config[config_name]['database']}"
+    c = admin_connection(config_name)
+    c.drop_database config[config_name]['database'] rescue nil
+    c.create_database config[config_name]['database']
+    ActiveRecord::Base.establish_connection config[config_name]
+    ActiveRecord::Migrator.migrate('spec/dummy/db/migrate')
+end
+
+# Drops database using the given configuration, failing silently if it doesn't exist.
+def drop_database(config_name)
+  puts "dropping database #{config[config_name]['database']}"
+  c = admin_connection(config_name)
+  c.drop_database config[config_name]['database'] rescue nil
+end
+
+# Get connection to admin-level schema (for manipulating other schema).
+def admin_connection(config_name)
+  ActiveRecord::Base.establish_connection config[config_name].merge(
+    'database' => config[config_name]['admin_schema']
+  )
+  ActiveRecord::Base.connection
+end
+
+# Return database configurations as given in spec/config/database.yml
 def config
   Apartment::Test.config['connections']
-end
-
-def pg_config
-  config['postgresql']
-end
-
-def my_config
-  config['mysql']
 end

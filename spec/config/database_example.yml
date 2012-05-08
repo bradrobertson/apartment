@@ -1,0 +1,20 @@
+# An example database configuration file for testing. Duplicate this file, rename it to 
+# database.yml and change credentials to match your development environment.
+#
+# admin_schema is any schema that you have read privileges for and don't plan to drop. 
+# It is simply used to ensure a connection for creating/dropping other databases.
+connections:
+  postgresql:
+    adapter: postgresql
+    database: apartment_postgresql_test
+    min_messages: WARNING
+    username: postgres
+    password:
+    admin_schema: postgres
+
+  mysql:
+    adapter: mysql2
+    database: apartment_mysql_test
+    username: root
+    password:
+    admin_schema: mysql
