@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe Apartment::Database do
   context "using mysql" do
-    # See apartment.yml file in dummy app config
+    # See spec/config/database.yml for configuration parameters
 
     let(:config){ Apartment::Test.config['connections']['mysql'].symbolize_keys }
 
     before do
       ActiveRecord::Base.establish_connection config
       Apartment::Test.load_schema   # load the Rails schema in the public db schema
-      subject.stub(:config).and_return config   # Use postgresql database config for this test
+      subject.stub(:config).and_return config   # Use mysql database config for this test
     end
 
     describe "#adapter" do
@@ -27,7 +27,7 @@ describe Apartment::Database do
 
   context "using postgresql" do
     
-    # See apartment.yml file in dummy app config
+    # See spec/config/database.yml for configuration parameters
     
     let(:config){ Apartment::Test.config['connections']['postgresql'].symbolize_keys }
     let(:database){ Apartment::Test.next_db }
