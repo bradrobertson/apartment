@@ -33,13 +33,7 @@ module Apartment
     # Separate Adapter for Postgresql when using schemas
     class PostgresqlSchemaAdapter < AbstractAdapter
 
-      #   Get the current schema search path
-      #
-      #   @return {String} current schema search path
-      #
-      def current_database
-        ActiveRecord::Base.connection.schema_search_path
-      end
+      attr_reader :current_database
 
       #   Drop the database schema
       #
@@ -53,7 +47,7 @@ module Apartment
       end
 
       #   Reset search path to default search_path
-      #   Set the table_name to always use the public namespace for excluded models
+      #   Set the table_name to always use the default namespace for excluded models
       #
       def process_excluded_models
         Apartment.excluded_models.each do |excluded_model|
@@ -66,14 +60,14 @@ module Apartment
 
           excluded_model.constantize.tap do |klass|
             # some models (such as delayed_job) seem to load and cache their column names before this,
-            # so would never get the public prefix, so reset first
+            # so would never get the default prefix, so reset first
             klass.reset_column_information
 
             # Ensure that if a schema *was* set, we override
             table_name = klass.table_name.split('.', 2).last
 
             # Not sure why, but Delayed::Job somehow ignores table_name_prefix...  so we'll just manually set table name instead
-            klass.table_name = "public.#{table_name}"
+            klass.table_name = "#{Apartment.schema_to_switch}.#{table_name}"
           end
         end
       end
@@ -84,6 +78,7 @@ module Apartment
       #
       def reset
         ActiveRecord::Base.connection.schema_search_path = @defaults[:schema_search_path]
+        @current_database = @defaults[:schema_search_path]
       end
 
     protected
@@ -92,10 +87,14 @@ module Apartment
       #
       def connect_to_new(database = nil)
         return reset if database.nil?
-        ActiveRecord::Base.connection.schema_search_path = database
+
+        @current_database = database.to_s
+
+        new_search_path = @defaults[:schema_search_path].gsub(Apartment.schema_to_switch, current_database)
+        ActiveRecord::Base.connection.schema_search_path = new_search_path
 
       rescue ActiveRecord::StatementInvalid
-        raise SchemaNotFound, "The schema #{database.inspect} cannot be found."
+        raise SchemaNotFound, "One of the following schema(s) is invalid: #{new_search_path}"
       end
 
       #   Create the new schema
