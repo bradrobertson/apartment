@@ -11,6 +11,7 @@ module Apartment
 
     class Mysql2Adapter < AbstractAdapter
 
+
     protected
 
       #   Connect to new database
@@ -19,7 +20,7 @@ module Apartment
       #
       #   @param {String} database Database name
       #
-      def connect_to_new(database)
+      def connect_to_new(database=nil)
         super
       rescue Mysql2::Error
         raise DatabaseNotFound, "Cannot find database #{environmentify(database)}"

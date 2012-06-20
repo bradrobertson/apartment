@@ -5,6 +5,7 @@ module Apartment
   module Adapters
 
     class AbstractAdapter
+      attr_accessor :current_database
 
       #   @constructor
       #   @param {Hash} config Database config
@@ -14,7 +15,7 @@ module Apartment
         @config = config
         @defaults = defaults
 
-        self.current_database = config[:database]
+        @current_database = nil
         ActiveRecord::Base.establish_connection config
       end
 
@@ -33,22 +34,6 @@ module Apartment
 
           yield if block_given?
         end
-      end
-
-      #   Get the current database name
-      #
-      #   @return {String} current database name
-      #
-      def current_database
-        Rails.application.config.current_database
-      end
-
-      #   Set the current database name
-      #
-      #   @return {String} current database name
-      #
-      def current_database=(val)
-        Rails.application.config.current_database = val
       end
 
       #   Drop the database
@@ -133,8 +118,8 @@ module Apartment
       #
       #   @param {String} database Database name
       #
-      def connect_to_new(database)
-        Apartment::Database.current_database = database
+      def connect_to_new(database=nil)
+        return reset if database.nil?
 
         if database == @config[:database]
           klass = ActiveRecord::Base
@@ -144,6 +129,7 @@ module Apartment
 
         klass.connection.active? # call active? to manually check if this connection is valid
 
+        @current_database = database.to_s
 
       rescue ActiveRecord::StatementInvalid
         raise DatabaseNotFound, "The database #{environmentify(database)} cannot be found."
