@@ -89,7 +89,7 @@ module Apartment
         return reset if database.nil?
 
         @current_database = database.to_s
-        unless ActiveRecord::Base.connection.schema_exists? database do
+        unless ActiveRecord::Base.connection.schema_exists? database
           raise SchemaNotFound, "The schema #{database.inspect} cannot be found."
         end
 
