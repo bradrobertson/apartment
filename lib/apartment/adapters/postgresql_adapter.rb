@@ -88,7 +88,11 @@ module Apartment
       def connect_to_new(database = nil)
         return reset if database.nil?
 
+        unless ActiveRecord::Base.connection.schema_exists? database do
+          raise SchemaNotFound, "The schema #{database.inspect} cannot be found."
+        end
         @current_database = database.to_s
+        Rails.logger.info "Switching to #{database} schema ....."
         ActiveRecord::Base.connection.schema_search_path = full_search_path
 
       rescue ActiveRecord::StatementInvalid
